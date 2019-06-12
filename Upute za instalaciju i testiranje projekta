@@ -1,0 +1,63 @@
+
+Upute za instalaciju i testiranje projekta
+
+Za pokretanje programa potrebno je imati sljedeće:
+1.	Xampp server ili neki drugi koji podržava PHP
+2.	Laravel okruženje
+3.	PostgreSQL bazu podataka
+Projekt je potrebno raspakirati unutar foldera htdocs koji su nalazi u xampp folderu. 
+Unutar PostgreSQL baze poterbno je stvoriti gisCloud bazu sa tablicama “user” i “post”.
+
+Stvaranje tablice se radi izvršavanjem sljedećeg upita
+-- Table: public."user"
+-- DROP TABLE public."user";
+CREATE TABLE public."user"
+(
+    id integer NOT NULL,
+    name character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    username character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    email text COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT "User_pkey" PRIMARY KEY (id)
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+ALTER TABLE public."user"
+    OWNER to postgres;
+
+-- Table: public.post
+-- DROP TABLE public.post;
+CREATE TABLE public.post
+(
+    "userId" integer NOT NULL,
+    title character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    id integer NOT NULL,
+    body text COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT "Post_pkey" PRIMARY KEY (id),
+    CONSTRAINT "userId" FOREIGN KEY ("userId")
+        REFERENCES public."user" (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+ALTER TABLE public.post
+    OWNER to postgres;
+
+Ukoliko se projekt ne želi spojiti na vašu bazu potrebno je otvoriti konfiguracijski file .env i podesiti prave vrijednosti korisničkog imena i lozinke.
+S obzirom da je u zadatku navedeno da se podaci trebaju povlačiti svako par minuta, ne više od 5, potrebno je imati takav sustav 
+koji će pokrenuti određenu naredbu u danom trenutku.
+Linux OS već ima takav sustav, Cron, te je potrebno samo dodati sljedeću liniju:
+* * * * * php /path-to-your-project/artisan schedule:run >> /dev/null 2>&1
+Windows OS nažalost nema taj sustav no ima Task scheduler. Točne upute za stvaranje Task-a se mogu pronaći na sljedećem linku
+ https://quantizd.com/how-to-use-laravel-task-scheduler-on-windows-10/
+Nakon toga potrebno je pozicionirati se unutar foldera projekta te otvoriti naredbeno sučelje (cmd) i izvršiti naredbu “php artisan serve” kako bi se pokrenuo server. 
+
+Testiranje:
+1.	Otvaramo stranicu koju je server pokrenuo
+2.	Ukoliko je postavljen Cronjob ili Task, baza podataka je trebala do sada povući podatke. Na prvoj stranici su svi korisnici, njihova korisnička imena i mail.
+3.	Sortiranje po imenu i korisničkom imenu je omogućeno pritiskom na gumb sort te odabirom na željeni uvjet sortiranja.
+4.	Objavi (post-u) svake pojedine osobe se može pristupiti klikom na link Post ispod mail-a osobe. Tada se otvara stranica sa svim postovima te osobe
